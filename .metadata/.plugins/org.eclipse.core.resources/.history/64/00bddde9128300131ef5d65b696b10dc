@@ -1,0 +1,225 @@
+/*
+ * File: Breakout.java
+ * -------------------
+ * Name:
+ * Section Leader:
+ * 
+ * This file will eventually implement the game of Breakout.
+ */
+
+import acm.graphics.*;
+import acm.program.*;
+import acm.util.*;
+
+import java.applet.*;
+import java.awt.*;
+import java.awt.event.*;
+
+public class Breakout extends GraphicsProgram {
+
+/** Width and height of application window in pixels */
+	public static final int APPLICATION_WIDTH = 400;
+	public static final int APPLICATION_HEIGHT = 600;
+
+/** Dimensions of game board (usually the same) */
+	private static final int WIDTH = APPLICATION_WIDTH;
+	private static final int HEIGHT = APPLICATION_HEIGHT;
+
+/** Dimensions of the paddle */
+	private static final int PADDLE_WIDTH = 60;
+	private static final int PADDLE_HEIGHT = 10;
+
+/** Offset of the paddle up from the bottom */
+	private static final int PADDLE_Y_OFFSET = 30;
+
+/** Number of bricks per row */
+	private static final int NBRICKS_PER_ROW = 10;
+
+/** Number of rows of bricks */
+	private static final int NBRICK_ROWS = 10;
+
+/** Separation between bricks */
+	private static final int BRICK_SEP = 4;
+
+/** Width of a brick */
+	private static final int BRICK_WIDTH =
+	  (WIDTH - (NBRICKS_PER_ROW - 1) * BRICK_SEP) / NBRICKS_PER_ROW;
+
+/** Height of a brick */
+	private static final int BRICK_HEIGHT = 8;
+
+/** Radius of the ball in pixels */
+	private static final int BALL_RADIUS = 10;
+
+/** Offset of the top brick row from the top */
+	private static final int BRICK_Y_OFFSET = 70;
+
+/** Number of turns */
+	private static final int NTURNS = 3;
+	
+	private static GRect paddle;
+	
+	private static double VX_LOCATION, VY_LOCATION;
+
+	
+/* Method: run() */
+/** Runs the Breakout program. */
+	
+	
+	public void run() {
+		setupGame();
+		playGame();
+	}
+	
+	/* Method: setupGame
+	 * ---------------------
+	 * This will basically set the game up by creating the paddle and bricks at the correct position.
+	 * 
+	 */
+
+	private void setupGame(){
+		createBricks();
+		createPaddle();
+	}
+	
+	/* Method: createBricks()
+	 * ---------------------
+	 * This method will basically create the bricks found in the game.
+	 * 
+	 */
+	
+	private void createBricks(){
+		for(int i = 0; i < NBRICK_ROWS; i++){
+			for(int j = 0; j < NBRICKS_PER_ROW; j++){
+				GRect brick = new GRect((BRICK_WIDTH * j) + (BRICK_SEP * j),BRICK_Y_OFFSET + (BRICK_HEIGHT * i) + (BRICK_SEP * i),BRICK_WIDTH,BRICK_HEIGHT);
+				colourBricks(brick,i);
+				brick.setFilled(true);
+				add(brick);
+			} //end 2nd for
+		} //end 1st for
+	}
+	
+	/* Method: colourBricks()
+	 * ----------------------
+	 * This method will basically colour in the rows of the bricks by determining where the control variable i is currently at.
+	 * 
+	 */
+	
+	private void colourBricks(GRect brick,int a){
+		if(a <= 1 ){
+			brick.setColor(Color.RED);
+		}
+		else if(a <= 3){
+			brick.setColor(Color.ORANGE);
+		}
+		else if (a <= 5){
+			brick.setColor(Color.YELLOW);
+		}
+		else if (a <= 7){
+			brick.setColor(Color.GREEN);
+		}
+		else if (a <= 9){
+			brick.setColor(Color.CYAN);
+		}
+	}
+	/* Method: createPaddle()
+	 * ----------------------
+	 * This method will basically create an initial paddle that is fixed right into the middle of the screen.
+	 */
+	
+	private void createPaddle(){
+		paddle = new GRect((WIDTH / 2) - (PADDLE_WIDTH / 2), HEIGHT - PADDLE_Y_OFFSET, PADDLE_WIDTH, PADDLE_HEIGHT);
+		paddle.setFilled(true);
+		add(paddle);
+	}
+	
+	/* Method: init()
+	 * --------------
+	 * This method will basically initialise the mouse listeners so that the program can track the movements of the mouse.
+	 * 
+	 */
+	
+	public void init(){
+		addMouseListeners();
+	}
+
+	/* Method: mouseMoved()
+	 * --------------
+	 * Whenever the user moves the mouse in accordance to the x location, then the paddle will move in conjunction the mouses x location.
+	 * 
+	 */
+
+	
+	public void	mouseMoved(MouseEvent e){
+		if(e.getX() < APPLICATION_WIDTH - PADDLE_WIDTH){
+			paddle.setLocation(e.getX(), HEIGHT - PADDLE_Y_OFFSET);
+			}
+	}
+	
+	/* Method: playGame()
+	 * --------------
+	 * This not only adds a ball into the canvas, but it also deals with the motion of the ball and the bricks hit.
+	 * 
+	 */
+
+	private void playGame(){
+		createBall();
+	}
+	
+	/* Method: createBall()
+	 * --------------
+	 * This creates the initial ball and places right in the middle of the game's application window.
+	 * 
+	 */
+
+	private void createBall(){
+		//GOval ball = new GOval((WIDTH / 2) - (BALL_RADIUS / 2), HEIGHT - BRICK_Y_OFFSET,BALL_RADIUS, BALL_RADIUS);
+		GOval ball = new GOval(0,0,BALL_RADIUS, BALL_RADIUS);
+		add(ball);
+		ball.setFilled(true);
+		moveBall(ball);
+	}
+	
+	/* Method: moveBall()
+	 * --------------
+	 * This starts to move the ball downwards
+	 * 
+	 */
+
+	private void moveBall(GOval object){
+		vy = +1.0;
+		vx = +1.0;
+		while(frontIsClear()){
+			//vx = rgen.nextDouble(1.0,3.0);
+			//if (rgen.nextBoolean(0.5)){
+				//vx = -vx;
+			//}
+			VX_LOCATION += vx;
+			VY_LOCATION += vy;
+			object.move(vx, vy);
+			System.out.println(VX_LOCATION + " " + VY_LOCATION);
+		} // end while
+	}
+	
+	/*Method: FrontIsClear()
+	 * ----------------------
+	 * This method will return true if there is no wall or brick in front of the object.
+	 * It will return false if there is an obstruction.
+	 */
+	
+	private boolean frontIsClear(){
+		if(VX_LOCATION != (APPLICATION_WIDTH - PADDLE_WIDTH) && VY_LOCATION != (HEIGHT - PADDLE_Y_OFFSET - PADDLE_HEIGHT)){
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+	
+
+	
+/* Instance Variables */
+
+	private double vx, vy;
+	private RandomGenerator rgen = RandomGenerator.getInstance();
+}
